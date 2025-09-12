@@ -58,23 +58,11 @@
             font-size: 1.2rem;
             font-weight: bold;
             transition: all 0.3s ease;
-            /* 添加兼容性更好的flex布局 */
-            flex-wrap: wrap;
-            width: 100%;
-        }
-        
-        /* 新增：确保游戏信息项在钉钉中正确显示 */
-        .game-info > div {
-            flex: 1;
-            min-width: 90px; /* 防止被挤压 */
-            text-align: center;
-            margin: 0 5px;
         }
         
         .score, .timer, .lives {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
         }
         
@@ -329,8 +317,6 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             display: none;
-            width: 90%;
-            max-width: 320px;
         }
         
         .game-over h2 {
@@ -631,12 +617,6 @@
             .instructions {
                 display: none;
             }
-            
-            /* 平板横屏模式宽度缩短20% */
-            .tablet.landscape .container {
-                width: 80%;
-                max-width: 80%;
-            }
         }
         
         @media (max-width: 600px) {
@@ -664,6 +644,7 @@
             /* 在移动端默认使用更大的游戏区域 */
             .game-screen {
                 height: 50vh;
+                min-height: 300px;
             }
             
             .fruit {
@@ -894,89 +875,6 @@
         .mobile.game-enlarged .game-screen {
             margin: 3px 0; /* 减少游戏屏幕的上下边距 */
         }
-
-        /* 新增：游戏结束弹窗优化 */
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: none;
-            width: 90%;
-            max-width: 320px;
-        }
-
-        /* 新增：游戏结束按钮样式优化 */
-        .game-over-btn {
-            padding: 12px 25px;
-            font-size: 1.1rem;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            background: #06d6a0;
-            color: white;
-            margin-top: 15px;
-            width: 100%;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .game-over-btn:active {
-            transform: scale(0.95);
-            background: #05b589;
-        }
-
-        /* iOS特定优化 */
-        .ios .game-over-btn {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* 安卓特定优化 */
-        .android .game-over-btn {
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-        }
-        
-        /* 新增：钉钉环境特定优化 */
-        .dingtalk .game-info {
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: space-between;
-            padding: 0 5px;
-        }
-        
-        .dingtalk .game-info > div {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .dingtalk.android .game-info {
-            /* 安卓钉钉特殊处理 */
-            font-size: 1.1rem;
-        }
-        
-        @media (max-width: 380px) {
-            .dingtalk.android .game-info {
-                font-size: 1rem;
-            }
-        }
-        
-        /* 确保生命值在钉钉中显示 */
-        .dingtalk .lives {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
     </style>
 </head>
 <body>
@@ -1019,7 +917,7 @@
             <div class="game-over" id="gameOver">
                 <h2>游戏结束!</h2>
                 <p>最终得分: <span id="finalScore">0</span></p>
-                <button class="game-over-btn" id="restartBtn">再玩一次</button>
+                <button class="btn-start" id="restartBtn">再玩一次</button>
             </div>
         </div>
         
@@ -1081,9 +979,6 @@
                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
                         (window.innerWidth >= 768 && window.innerHeight >= 1024);
         
-        // 新增：检测是否为钉钉环境
-        const isDingTalk = /DingTalk/i.test(navigator.userAgent);
-        
         // 难度配置
         const difficultySettings = {
             easy: { fruitInterval: 1200, animationDuration: { min: 4, max: 6 } },
@@ -1108,15 +1003,6 @@
         const container = document.querySelector('.container');
         const body = document.body;
         
-        // 检测横屏模式
-        function checkOrientation() {
-            if (window.innerHeight < window.innerWidth) {
-                body.classList.add('landscape');
-            } else {
-                body.classList.remove('landscape');
-            }
-        }
-        
         // 如果是移动设备，给body和container添加mobile类
         if (isMobile) {
             body.classList.add('mobile');
@@ -1138,16 +1024,6 @@
         if (isIOS) {
             body.classList.add('ios');
         }
-        
-        // 如果是钉钉环境，添加dingtalk类
-        if (isDingTalk) {
-            body.classList.add('dingtalk');
-            console.log("检测到钉钉环境，应用特定优化");
-        }
-        
-        // 初始检查方向
-        checkOrientation();
-        window.addEventListener('resize', checkOrientation);
         
         // 水果样式配置
         const fruitStyles = [
@@ -1288,16 +1164,10 @@
             gameScreen.classList.add('scrollable');
         }
         
-        // 放大游戏界面 - 修改：安卓设备也应用放大
+        // 放大游戏界面
         function enlargeGameInterface() {
             // 只在移动设备上放大，且不是平板设备
             if (isMobile && !isTablet) {
-                body.classList.add('game-enlarged');
-                container.classList.add('game-enlarged');
-                isGameEnlarged = true;
-            }
-            // 安卓设备特殊处理：即使被识别为平板，如果是手机尺寸也放大
-            else if (isAndroid && window.innerWidth < 768) {
                 body.classList.add('game-enlarged');
                 container.classList.add('game-enlarged');
                 isGameEnlarged = true;
@@ -1820,14 +1690,14 @@
             }
         }
         
-        // 结束游戏 - 修改：不再自动缩小界面
+        // 结束游戏
         function endGame() {
             pauseGame();
             finalScoreElement.textContent = score;
             gameOverScreen.style.display = 'block';
             
-            // 游戏结束时不再自动缩小界面，保持当前状态
-            // shrinkGameInterface();
+            // 游戏结束时缩小界面
+            shrinkGameInterface();
         }
         
         // 添加CSS动画
@@ -2086,7 +1956,6 @@
                 startGame();
             });
             
-            // 为再玩一次按钮添加触摸事件（兼容iOS和Android）
             restartBtn.addEventListener('touchend', function(e) {
                 e.preventDefault();
                 gameOverScreen.style.display = 'none';
@@ -2105,18 +1974,6 @@
             
             // 初始时允许gameScreen滚动
             gameScreen.classList.add('scrollable');
-            
-            // 钉钉环境特殊处理
-            if (isDingTalk) {
-                console.log("钉钉环境检测，应用特定优化");
-                // 确保生命值显示
-                const livesElement = document.querySelector('.lives');
-                if (livesElement) {
-                    livesElement.style.display = 'flex';
-                    livesElement.style.visibility = 'visible';
-                    livesElement.style.opacity = '1';
-                }
-            }
         });
         
         // 初始化游戏
