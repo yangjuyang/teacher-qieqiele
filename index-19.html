@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>水果数学切切乐 - 二年级加减法游戏</title>
+    <style>
+        /* 所有原有样式保持不变 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', '楷体', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ffccd5, #c9f5ff);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            transition: padding 0.3s ease;
+        }
+        
+        .container {
+            width: 110%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        h1 {
+            color: #ff6b6b;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #ffd166;
+            transition: all 0.3s ease;
+        }
+        
+        .subtitle {
+            color: #06d6a0;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .score, .timer, .lives {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .score { color: #118ab2; }
+        .timer { color: #ef476f; }
+        .lives { color: #06d6a0; }
+        
+        .current-problem {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #073b4c;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .game-screen {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #a9e4f7, #fafcc2);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 3px solid #ffd166;
+            touch-action: none;
+            transition: all 0.3s ease;
+        }
+        
+        /* 新增：游戏开始前允许滚动的样式 */
+        .game-screen.scrollable {
+            overflow-y: auto;
+            touch-action: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .game-screen.scrollable::after {
+            display: none; /* 隐藏白色提示条 */
+        }
+        
+        .fruit {
+            position: absolute;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        
+        .fruit:hover {
+            transform: scale(1.05);
+        }
+        
+        /* 水果半边的样式 */
+        .fruit-half {
+            position: absolute;
+            width: 40px;
+            height: 80px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 24px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+        .fruit-half.left {
+            left: 0;
+            border-radius: 40px 0 0 40px;
+        }
+        
+        .fruit-half.right {
+            right: 0;
+            border-radius: 0 40px 40px 0;
+        }
+        
+        .fruit-half-inner {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .fruit-half.left .fruit-half-inner {
+            left: 0;
+        }
+        
+        .fruit-half.right .fruit-half-inner {
+            right: 0;
+        }
+        
+        /* 刀光效果 */
+        .swipe-effect {
+            position: absolute;
+            height: 4px;
+            background: linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 15;
+            transform-origin: 0 50%;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.7);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            touch-action: manipulation;
+        }
+        
+        .btn-start {
+            background: #06d6a0;
+            color: white;
+        }
+        
+        .btn-pause {
+            background: #ffd166;
+            color: white;
+        }
+        
+        .btn-reset {
+            background: #118ab2;
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .selector-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .selector {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .selector h3 {
+            color: #073b4c;
+            margin-bottom: 10px;
+        }
+        
+        .mode-selector, .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .mode-btn, .difficulty-btn {
+            padding: 8px 16px;
+            background: #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn.active, .difficulty-btn.active {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: left;
+            overflow-y: auto;
+            max-height: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .instructions h3 {
+            color: #073b4c;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .juice-effect {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* 果汁滴效果 */
+        .juice-drop {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 8;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .game-over h2 {
+            color: #ef476f;
+            margin-bottom: 15px;
+        }
+        
+        .game-over p {
+            margin: 10px 0;
+            font-size: 1.2rem;
+        }
+        
+        /* 游戏放大时的样式 - 只在移动端应用 */
+        body.mobile.game-enlarged {
+            padding: 10px;
+        }
+        
+        .container.mobile.game-enlarged {
+            max-width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+        }
+        
+        .mobile.game-enlarged h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .mobile.game-enlarged .subtitle {
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        .mobile.game-enlarged .selector-container,
+        .mobile.game-enlarged .instructions {
+            display: none;
+        }
+        
+        .mobile.game-enlarged .game-info {
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        .mobile.game-enlarged .current-problem {
+            font-size: 2rem;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        
+        .mobile.game-enlarged .game-screen {
+            height: 65vh; /* 从55vh增加到65vh，增大游戏区域 */
+            min-height: 350px;
+            margin: 5px 0;
+        }
+        
+        .mobile.game-enlarged .controls {
+            margin: 15px 0;
+            gap: 10px;
+        }
+        
+        /* 移动端放大状态下按钮缩小15% */
+        .mobile.game-enlarged .controls button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            transform: scale(0.85);
+        }
+        
+        .mobile.game-enlarged .controls button:hover {
+            transform: scale(0.85) translateY(-3px);
+        }
+        
+        /* 水果在放大状态下的样式 */
+        .mobile.game-enlarged .fruit {
+            min-width: 80px;
+            min-height: 80px;
+            font-size: 1.8rem;
+        }
+        
+        /* 新增：平板设备不应用放大样式 */
+        .tablet .container.mobile.game-enlarged,
+        .tablet.body.mobile.game-enlarged {
+            max-width: 800px;
+            padding: 20px;
+            border-radius: 20px;
+        }
+        
+        .tablet .mobile.game-enlarged h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .tablet .mobile.game-enlarged .subtitle {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        
+        .tablet .mobile.game-enlarged .selector-container,
+        .tablet .mobile.game-enlarged .instructions {
+            display: flex;
+        }
+        
+        .tablet .mobile.game-enlarged .game-info {
+            margin: 15px 0;
+            font-size: 1.2rem;
+        }
+        
+        .tablet .mobile.game-enlarged .current-problem {
+            font-size: 2.5rem;
+            margin: 15px 0;
+            padding: 15px;
+        }
+        
+        .tablet .mobile.game-enlarged .game-screen {
+            height: 400px;
+            min-height: auto;
+            margin: 10px 0;
+        }
+        
+        .tablet .mobile.game-enlarged .controls {
+            margin: 20px 0;
+            gap: 15px;
+        }
+        
+        .tablet .mobile.game-enlarged .controls button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            transform: none;
+        }
+        
+        .tablet .mobile.game-enlarged .controls button:hover {
+            transform: translateY(-3px);
+        }
+        
+        .tablet .mobile.game-enlarged .fruit {
+            min-width: 70px;
+            min-height: 70px;
+            font-size: 1.5rem;
+        }
+        
+        /* 针对安卓设备的特定优化 */
+        /* 安卓设备容器优化 */
+        .android .container {
+            max-width: 95%;
+            padding: 15px;
+            margin: 0 auto;
+        }
+        
+        /* 安卓设备控制按钮优化 */
+        .android .controls {
+            gap: 8px;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .android .controls button {
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+        }
+        
+        /* 安卓设备选择器优化 */
+        .android .selector-container {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .android .mode-selector,
+        .android .difficulty-selector {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .android .mode-btn,
+        .android .difficulty-btn {
+            min-width: 80px;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        /* 针对小屏幕安卓设备的进一步优化 */
+        @media (max-width: 360px) {
+            .android .container {
+                padding: 12px;
+                max-width: 98%;
+            }
+            
+            .android h1 {
+                font-size: 1.8rem;
+            }
+            
+            .android .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .android .mode-btn,
+            .android .difficulty-btn {
+                min-width: 70px;
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .android .controls button {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+            
+            .android .game-info {
+                font-size: 1rem;
+            }
+            
+            .android .current-problem {
+                font-size: 1.6rem;
+                padding: 10px;
+            }
+        }
+
+        /* 针对超小屏幕设备的优化 */
+        @media (max-width: 320px) {
+            .android .controls button {
+                padding: 8px 8px;
+                font-size: 0.8rem;
+            }
+            
+            .android .mode-btn,
+            .android .difficulty-btn {
+                min-width: 65px;
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 新增针对安卓设备的控制按钮优化 */
+        .android .controls {
+            gap: 6px;
+            margin: 12px 0;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+        }
+
+        .android .controls button {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            min-width: 0;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 针对小屏幕安卓设备的进一步优化 */
+        @media (max-width: 380px) {
+            .android .controls {
+                gap: 4px;
+                margin: 10px 0;
+            }
+            
+            .android .controls button {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* 针对超小屏幕安卓设备 */
+        @media (max-width: 340px) {
+            .android .controls button {
+                padding: 7px 8px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 调整安卓设备容器边距 */
+        .android .container {
+            padding: 15px;
+            margin: 0 10px;
+        }
+
+        /* 横屏模式优化 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container {
+                padding: 15px;
+            }
+            
+            .selector-container {
+                flex-direction: row;
+                margin: 10px 0;
+            }
+            
+            .game-screen {
+                height: 65vh;
+                min-height: 250px;
+            }
+            
+            .instructions {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .selector-container {
+                flex-direction: column;
+            }
+            
+            .current-problem {
+                font-size: 2rem;
+            }
+            
+            .game-screen {
+                height: 300px;
+            }
+            
+            button {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            /* 在移动端默认使用更大的游戏区域 */
+            .game-screen {
+                height: 50vh;
+                min-height: 300px;
+            }
+            
+            .fruit {
+                min-width: 70px;
+                min-height: 70px;
+            }
+        }
+        
+        .fruit {
+            touch-action: manipulation;
+        }
+        
+        .game-screen, .fruit, button {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        @media (max-width: 768px) {
+            .fruit {
+                min-width: 70px;
+                min-height: 70px;
+            }
+            
+            button {
+                padding: 15px 30px;
+                min-height: 50px;
+            }
+            
+            .mode-btn, .difficulty-btn {
+                padding: 12px 20px;
+                min-width: 80px;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .game-screen {
+                height: 280px;
+            }
+            
+            .current-problem {
+                font-size: 1.8rem;
+                padding: 10px;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            button {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+            
+            .instructions {
+                max-height: 150px;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 90%;
+            }
+            
+            .game-screen {
+                height: 450px;
+            }
+        }
+        /* 移动端游戏结束弹框样式优化 */
+        @media (max-width: 768px) {
+            .game-over {
+                padding: 20px;
+                width: 80%;
+                max-width: 300px;
+            }
+            
+            .game-over h2 {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+            
+            .game-over p {
+                font-size: 1rem;
+                margin: 8px 0;
+            }
+            
+            .game-over button {
+                padding: 10px 20px;
+                font-size: 1rem;
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .game-over {
+                padding: 15px;
+                width: 85%;
+            }
+            
+            .game-over h2 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* 移动端放大状态下按钮优化 */
+        .mobile.game-enlarged .controls {
+            margin: 15px 0;
+            gap: 6px; /* 进一步减少间距 */
+            justify-content: space-between; /* 均匀分布按钮 */
+            width: 100%;
+            flex-wrap: nowrap; /* 确保不换行 */
+        }
+
+        .mobile.game-enlarged .controls button {
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            min-width: 0; /* 移除最小宽度限制 */
+            transform: none;
+            flex: 1; /* 允许按钮伸缩以适应容器 */
+            margin: 0 2px; /* 减少边距 */
+            white-space: nowrap; /* 防止文字换行 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile.game-enlarged .controls button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 针对小屏幕设备的进一步优化 */
+        @media (max-width: 380px) {
+            .mobile.game-enlarged .controls {
+                gap: 4px;
+            }
+            
+            .mobile.game-enlarged .controls button {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* 针对横屏模式的优化 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .mobile.game-enlarged .controls {
+                margin: 8px 0;
+            }
+            
+            .mobile.game-enlarged .controls button {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* 安卓设备特定优化 - 确保按钮在一行 */
+        .android.mobile.game-enlarged .controls {
+            gap: 5px;
+            margin: 12px 0;
+        }
+        
+        .android.mobile.game-enlarged .controls button {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 360px) {
+            .android.mobile.game-enlarged .controls button {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* 新增：切开动画 */
+        @keyframes cut-left {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-20px, -30px) rotate(-20deg); opacity: 0; }
+        }
+        
+        @keyframes cut-right {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(20px, -30px) rotate(20deg); opacity: 0; }
+        }
+        
+        @keyframes juice-fall {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.2); opacity: 0; }
+        }
+        
+        @keyframes bomb-explode {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        
+        @keyframes swipe-fade {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .cut-animation-left {
+            animation: cut-left 0.8s forwards;
+        }
+        
+        .cut-animation-right {
+            animation: cut-right 0.8s forwards;
+        }
+        
+        .bomb-animation {
+            animation: bomb-explode 0.5s forwards;
+        }
+        
+        .swipe-fade {
+            animation: swipe-fade 0.3s forwards;
+        }
+
+        /* 新增：针对移动端放大状态的进一步优化 */
+        .mobile.game-enlarged .current-problem {
+            margin: 5px 0; /* 减少算式区域的上下边距 */
+            padding: 8px; /* 减少内边距 */
+        }
+        
+        .mobile.game-enlarged .game-info {
+            margin: 8px 0; /* 减少游戏信息区域的上下边距 */
+        }
+        
+        .mobile.game-enlarged .game-screen {
+            margin: 3px 0; /* 减少游戏屏幕的上下边距 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>水果数学切切乐</h1>
+        <div class="subtitle">切开正确答案的水果，避开错误答案!</div>
+        
+        <div class="game-info">
+            <div class="score">得分: <span id="score">0</span></div>
+            <div class="timer">时间: <span id="timer">60</span>秒</div>
+            <div class="lives">生命: <span id="lives">3</span></div>
+        </div>
+        
+        <div class="selector-container">
+            <div class="selector">
+                <h3>题目类型</h3>
+                <div class="mode-selector">
+                    <div class="mode-btn active" data-mode="addition">加法</div>
+                    <div class="mode-btn" data-mode="subtraction">减法</div>
+                    <div class="mode-btn" data-mode="mixed">混合</div>
+                </div>
+            </div>
+            
+            <div class="selector">
+                <h3>游戏难度</h3>
+                <div class="difficulty-selector">
+                    <div class="difficulty-btn active" data-difficulty="easy">简单</div>
+                    <div class="difficulty-btn" data-difficulty="medium">中等</div>
+                    <div class="difficulty-btn" data-difficulty="hard">困难</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="current-problem" id="currentProblem">
+            10 + 5 = ?
+        </div>
+        
+        <div class="game-screen scrollable" id="gameScreen">
+            <!-- 水果将动态生成在这里 -->
+            <div class="game-over" id="gameOver">
+                <h2>游戏结束!</h2>
+                <p>最终得分: <span id="finalScore">0</span></p>
+                <button class="btn-start" id="restartBtn">再玩一次</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn-start" id="startBtn">开始游戏</button>
+            <button class="btn-pause" id="pauseBtn">暂停</button>
+            <button class="btn-reset" id="resetBtn">重置</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>游戏说明:</h3>
+            <ul>
+                <li>点击或滑动切开带有正确答案的水果</li>
+                <li>避开带有错误答案的水果和炸弹</li>
+                <li>每答对一题得10分，答错或碰到炸弹将失去一条生命</li>
+                <li>连续答对会有连击加分哦!</li>
+                <li>游戏时间60秒，尽可能获得高分吧!</li>
+                <li>简单：水果速度慢 | 中等：水果速度中等 | 困难：水果速度快</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 游戏变量
+        let score = 0;
+        let timeLeft = 60;
+        let lives = 3;
+        let gameInterval;
+        let fruitInterval;
+        let isPlaying = false;
+        let currentMode = 'addition';
+        let currentDifficulty = 'easy';
+        let combo = 0;
+        let currentExpression = "";
+        let currentAnswer = 0;
+        // 在游戏变量部分添加以下变量
+        let correctFruitCount = 0; // 跟踪连续非正确答案的数量
+        let lastWasCorrect = false; // 跟踪上一个是否是正确答案
+        let isGameEnlarged = false; // 跟踪游戏是否处于放大状态
+        
+        // 滑动手势相关变量
+        let isSwipeActive = false;
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        let swipePoints = []; // 存储滑动路径点
+        let swipeFruitsCut = new Set(); // 存储本次滑动已切割的水果
+
+        // 音频上下文
+        let audioContext = null;
+        let audioInitialized = false;
+        
+        // 检测设备类型
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isMobile = isIOS || isAndroid;
+        // 新增：检测是否为平板设备
+        const isTablet = /iPad|Android|Tablet|PlayBook|Silk|KFAPWI/i.test(navigator.userAgent) || 
+                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+                        (window.innerWidth >= 768 && window.innerHeight >= 1024);
+        
+        // 难度配置
+        const difficultySettings = {
+            easy: { fruitInterval: 1200, animationDuration: { min: 4, max: 6 } },
+            medium: { fruitInterval: 800, animationDuration: { min: 3, max: 5 } },
+            hard: { fruitInterval: 500, animationDuration: { min: 2, max: 4 } }
+        };
+        
+        // DOM元素
+        const gameScreen = document.getElementById('gameScreen');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const livesElement = document.getElementById('lives');
+        const currentProblemElement = document.getElementById('currentProblem');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        const gameOverScreen = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+        const container = document.querySelector('.container');
+        const body = document.body;
+        
+        // 如果是移动设备，给body和container添加mobile类
+        if (isMobile) {
+            body.classList.add('mobile');
+            container.classList.add('mobile');
+        }
+        
+        // 如果是平板设备，添加tablet类
+        if (isTablet) {
+            body.classList.add('tablet');
+            container.classList.add('tablet');
+        }
+        
+        // 如果是安卓设备，添加android类
+        if (isAndroid) {
+            body.classList.add('android');
+        }
+        
+        // 如果是iOS设备，添加ios类
+        if (isIOS) {
+            body.classList.add('ios');
+        }
+        
+        // 水果样式配置
+        const fruitStyles = [
+            { background: 'linear-gradient(to bottom, #ff5e5e, #ff2121)', color: 'white', type: 'apple', width: 70 },
+            { background: 'linear-gradient(to bottom, #ffeb3b, #ffc107)', color: '#333', type: 'lemon', width: 65 },
+            { background: 'linear-gradient(to bottom, #4caf50, #2e7d32)', color: 'white', type: 'watermelon', width: 80 },
+            { background: 'linear-gradient(to bottom, #ff9800, #f57c00)', color: 'white', type: 'orange', width: 70 },
+            { background: 'linear-gradient(to bottom, #e91e63, #ad1457)', color: 'white', type: 'strawberry', width: 60 },
+            { background: 'linear-gradient(to bottom, #9c27b0, #6a1b9a)', color: 'white', type: 'grape', width: 55 }
+        ];
+        
+        // 初始化音频
+        function initAudio() {
+            if (audioInitialized) return audioContext;
+            
+            try {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (window.AudioContext) {
+                    audioContext = new AudioContext();
+                    
+                    // 安卓设备需要用户交互后才能播放音频
+                    const resumeAudio = function() {
+                        if (audioContext && audioContext.state === 'suspended') {
+                            audioContext.resume().then(() => {
+                                console.log('AudioContext resumed successfully');
+                            });
+                        }
+                        document.removeEventListener('click', resumeAudio);
+                        document.removeEventListener('touchstart', resumeAudio);
+                    };
+                    
+                    document.addEventListener('click', resumeAudio);
+                    document.addEventListener('touchstart', resumeAudio);
+                    
+                    audioInitialized = true;
+                    return audioContext;
+                }
+            } catch (e) {
+                console.error('Web Audio API is not supported in this browser', e);
+            }
+            return null;
+        }
+        
+        // 播放音效
+        function playSound(frequency, type, duration) {
+            // 确保音频上下文已初始化
+            if (!audioInitialized) {
+                initAudio();
+            }
+            
+            if (!audioContext) return;
+            
+            // 检查音频上下文状态，如果是暂停状态则尝试恢复
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    actuallyPlaySound(frequency, type, duration);
+                }).catch(error => {
+                    console.error('Failed to resume audio context:', error);
+                });
+            } else {
+                actuallyPlaySound(frequency, type, duration);
+            }
+        }
+        
+        // 实际播放声音的函数
+        function actuallyPlaySound(frequency, type, duration) {
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = type;
+                oscillator.frequency.value = frequency;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (error) {
+                console.error('Error playing sound:', error);
+            }
+        }
+        
+        // 生成数学题目
+        function generateProblem() {
+            let num1, num2;
+            
+            if (currentMode === 'addition' || (currentMode === 'mixed' && Math.random() > 0.5)) {
+                // 加法题
+                num1 = Math.floor(Math.random() * 50) + 1;
+                num2 = Math.floor(Math.random() * 50) + 1;
+                currentAnswer = num1 + num2;
+                currentExpression = `${num1} + ${num2}`;
+            } else {
+                // 减法题（确保结果不为负数）
+                num2 = Math.floor(Math.random() * 50) + 1;
+                num1 = Math.floor(Math.random() * 50) + num2;
+                currentAnswer = num1 - num2;
+                currentExpression = `${num1} - ${num2}`;
+            }
+            
+            // 更新题目显示
+            currentProblemElement.textContent = `${currentExpression} = ?`;
+            
+            // 生成新题目时重置计数器
+            correctFruitCount = 0;
+            lastWasCorrect = false;
+            
+            return { expression: currentExpression, answer: currentAnswer };
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            score = 0;
+            timeLeft = 60;
+            lives = 3;
+            combo = 0;
+            correctFruitCount = 0; // 重置计数器
+            lastWasCorrect = false; // 重置标志
+            updateUI();
+            gameOverScreen.style.display = 'none';
+            
+            // 生成第一个题目
+            generateProblem();
+            
+            // 清除任何可能存在的水果
+            const fruits = document.querySelectorAll('.fruit');
+            fruits.forEach(fruit => fruit.remove());
+            
+            // 只在重置按钮被点击时恢复游戏界面大小
+            if (!isGameEnlarged) {
+                shrinkGameInterface();
+            }
+            
+            // 游戏初始化时允许gameScreen滚动
+            gameScreen.classList.add('scrollable');
+        }
+        
+        // 放大游戏界面
+        function enlargeGameInterface() {
+            // 只在移动设备上放大，且不是平板设备
+            if (isMobile && !isTablet) {
+                body.classList.add('game-enlarged');
+                container.classList.add('game-enlarged');
+                isGameEnlarged = true;
+            }
+        }
+        
+        // 缩小游戏界面
+        function shrinkGameInterface() {
+            body.classList.remove('game-enlarged');
+            container.classList.remove('game-enlarged');
+            isGameEnlarged = false;
+        }
+        
+        // 开始游戏
+        function startGame() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            startBtn.disabled = true;
+            
+            // 移除可滚动类，禁止gameScreen滚动
+            gameScreen.classList.remove('scrollable');
+            
+            // 放大游戏界面
+            enlargeGameInterface();
+            
+            // 初始化音频
+            initAudio();
+            
+            // 游戏计时器
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+            
+            // 根据难度设置水果生成间隔
+            const fruitIntervalTime = difficultySettings[currentDifficulty].fruitInterval;
+            fruitInterval = setInterval(createFruit, fruitIntervalTime);
+        }
+        
+        // 暂停游戏
+        function pauseGame() {
+            if (!isPlaying) return;
+            
+            isPlaying = false;
+            startBtn.disabled = false;
+            clearInterval(gameInterval);
+            clearInterval(fruitInterval);
+            
+            // 暂停所有水果的动画
+            const fruits = document.querySelectorAll('.fruit');
+            fruits.forEach(fruit => {
+                fruit.style.animationPlayState = 'paused';
+            });
+            
+            // 游戏暂停时恢复gameScreen滚动
+            gameScreen.classList.add('scrollable');
+            
+            // 游戏暂停时恢复页面滚动
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 重置游戏
+        function resetGame() {
+            pauseGame();
+            initGame();
+            // 重置时总是缩小界面
+            shrinkGameInterface();
+        }
+        
+        // 创建水果
+        function createFruit() {
+            if (!isPlaying) return;
+            
+            const screenWidth = gameScreen.offsetWidth;
+            const fruitSize = Math.floor(Math.random() * 20) + 60; // 60-80px
+            
+            // 随机选择水果样式
+            const style = fruitStyles[Math.floor(Math.random() * fruitStyles.length)];
+            
+            // 创建水果元素
+            const fruit = document.createElement('div');
+            fruit.className = 'fruit';
+            fruit.style.width = `${fruitSize}px`;
+            fruit.style.height = `${fruitSize}px`;
+            fruit.style.background = style.background;
+            fruit.style.color = style.color;
+            fruit.style.fontSize = `${fruitSize / 3}px`;
+            fruit.style.top = '-80px';
+            fruit.style.left = `${Math.random() * (screenWidth - fruitSize)}px`;
+            
+            // 决定这个水果是正确答案还是错误答案（20%几率是炸弹）
+            let isBomb = false;
+            let displayText;
+            
+            // 替换原有的决定水果是正确答案还是错误答案的逻辑
+            if (Math.random() < 0.2) {
+                // 炸弹水果
+                isBomb = true;
+                displayText = '💣';
+                fruit.dataset.isBomb = true;
+                correctFruitCount++; // 炸弹也算作非正确答案计数
+            } else {
+                // 确保连续4个水果内必有一个正确答案，且不会有两个正确答案
+                if (correctFruitCount >= 3 || (lastWasCorrect && correctFruitCount >= 2)) {
+                    // 正确答案
+                    displayText = currentAnswer;
+                    fruit.dataset.correct = true;
+                    correctFruitCount = 0;
+                    lastWasCorrect = true;
+                    // 添加视觉提示
+                    fruit.style.boxShadow = '0 0 15px 5px #4caf50';
+                } else {
+                    // 50%几率正确答案，50%错误答案
+                    if (Math.random() < 0.5 && !lastWasCorrect) {
+                        // 正确答案
+                        displayText = currentAnswer;
+                        fruit.dataset.correct = true;
+                        correctFruitCount = 0;
+                        lastWasCorrect = true;
+                        // 添加视觉提示
+                        fruit.style.boxShadow = '0 0 15px 5px #4caf50';
+                    } else {
+                        // 错误答案（生成接近正确答案的干扰项）
+                        let wrongAnswer;
+                        if (Math.random() < 0.5) {
+                            wrongAnswer = currentAnswer + Math.floor(Math.random() * 5) + 1;
+                        } else {
+                            wrongAnswer = currentAnswer - Math.floor(Math.random() * 5) - 1;
+                        }
+                        // 确保错误答案不为负数
+                        wrongAnswer = Math.max(0, wrongAnswer);
+                        displayText = wrongAnswer;
+                        fruit.dataset.correct = false;
+                        correctFruitCount++;
+                        lastWasCorrect = false;
+                    }
+                }
+            }
+            
+            fruit.textContent = displayText;
+            
+            // 根据难度设置动画速度
+            const animDuration = difficultySettings[currentDifficulty].animationDuration;
+            const animationDuration = Math.random() * (animDuration.max - animDuration.min) + animDuration.min;
+            fruit.style.animation = `fall ${animationDuration}s linear`;
+            
+            // 添加到游戏屏幕
+            gameScreen.appendChild(fruit);
+            
+            // 水果点击事件
+            fruit.addEventListener('click', () => {
+                handleFruitInteraction(fruit);
+            });
+            
+            // 动画结束后移除水果
+            setTimeout(() => {
+                if (fruit.parentNode && !fruit.dataset.cut) {
+                    fruit.remove();
+                }
+            }, animationDuration * 1000);
+        }
+        
+        // 处理水果交互（点击或滑动）
+        function handleFruitInteraction(fruit) {
+            if (!isPlaying || fruit.dataset.cut) return;
+            
+            // 标记为已切割，防止重复切割
+            fruit.dataset.cut = true;
+            
+            // 获取水果位置
+            const rect = fruit.getBoundingClientRect();
+            const gameScreenRect = gameScreen.getBoundingClientRect();
+            const x = rect.left - gameScreenRect.left;
+            const y = rect.top - gameScreenRect.top;
+            
+            if (fruit.dataset.isBomb) {
+                // 点击了炸弹
+                createBombEffect(fruit, x, y);
+                lives--;
+                playSound(130.81, 'square', 0.7); // 炸弹音效
+                updateUI();
+                combo = 0;
+                checkGameOver();
+            } else if (fruit.dataset.correct === 'true') {
+                // 点击了正确答案
+                createCutEffect(fruit, x, y, '#4caf50');
+                score += 10;
+                combo++;
+                
+                // 连击奖励
+                if (combo >= 3) {
+                    score += Math.floor(combo / 3) * 5;
+                }
+                
+                playSound(783.99, 'triangle', 0.3); // 正确音效
+                updateUI();
+                
+                // 答对后生成新题目
+                generateProblem();
+            } else {
+                // 点击了错误答案
+                createCutEffect(fruit, x, y, '#ff9800');
+                lives--;
+                playSound(196.00, 'square', 0.5); // 错误音效
+                updateUI();
+                combo = 0;
+                checkGameOver();
+            }
+            
+            // 动画播放完后移除水果
+            setTimeout(() => {
+                if (fruit.parentNode) {
+                    fruit.remove();
+                }
+            }, 800);
+        }
+        
+        // 创建切开效果
+        function createCutEffect(fruit, x, y, color) {
+            const fruitSize = parseInt(fruit.style.width);
+            const value = fruit.textContent;
+            const background = fruit.style.background;
+            const textColor = fruit.style.color;
+            
+            // 隐藏原水果
+            fruit.style.visibility = 'hidden';
+            
+            // 创建左半部分
+            const leftHalf = document.createElement('div');
+            leftHalf.className = 'fruit-half left';
+            leftHalf.style.background = background;
+            leftHalf.style.color = textColor;
+            leftHalf.style.width = `${fruitSize/2}px`;
+            leftHalf.style.height = `${fruitSize}px`;
+            leftHalf.style.left = `${x}px`;
+            leftHalf.style.top = `${y}px`;
+            leftHalf.style.fontSize = fruit.style.fontSize;
+            
+            const leftInner = document.createElement('div');
+            leftInner.className = 'fruit-half-inner';
+            leftInner.style.background = background;
+            leftInner.style.color = textColor;
+            leftInner.style.width = `${fruitSize}px`;
+            leftInner.style.height = `${fruitSize}px`;
+            leftInner.textContent = value;
+            leftHalf.appendChild(leftInner);
+            
+            // 创建右半部分
+            const rightHalf = document.createElement('div');
+            rightHalf.className = 'fruit-half right';
+            rightHalf.style.background = background;
+            rightHalf.style.color = textColor;
+            rightHalf.style.width = `${fruitSize/2}px`;
+            rightHalf.style.height = `${fruitSize}px`;
+            rightHalf.style.left = `${x + fruitSize/2}px`;
+            rightHalf.style.top = `${y}px`;
+            rightHalf.style.fontSize = fruit.style.fontSize;
+            
+            const rightInner = document.createElement('div');
+            rightInner.className = 'fruit-half-inner';
+            rightInner.style.background = background;
+            rightInner.style.color = textColor;
+            rightInner.style.width = `${fruitSize}px`;
+            rightInner.style.height = `${fruitSize}px`;
+            rightInner.textContent = value;
+            rightHalf.appendChild(rightInner);
+            
+            // 添加到游戏屏幕
+            gameScreen.appendChild(leftHalf);
+            gameScreen.appendChild(rightHalf);
+            
+            // 应用动画
+            setTimeout(() => {
+                leftHalf.style.animation = 'cut-left 0.8s forwards';
+                rightHalf.style.animation = 'cut-right 0.8s forwards';
+                
+                // 创建果汁飞溅效果
+                createEnhancedJuiceEffect(x + fruitSize/2, y + fruitSize/2, color);
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    leftHalf.remove();
+                    rightHalf.remove();
+                }, 800);
+            }, 10);
+        }
+        
+        // 创建炸弹爆炸效果
+        function createBombEffect(fruit, x, y) {
+            const fruitSize = parseInt(fruit.style.width);
+            
+            // 隐藏原水果
+            fruit.style.visibility = 'hidden';
+            
+            // 创建炸弹爆炸效果
+            const bombEffect = document.createElement('div');
+            bombEffect.className = 'fruit';
+            bombEffect.style.background = 'radial-gradient(circle, #ff0000, #ff8800, #ff0000)';
+            bombEffect.style.color = 'white';
+            bombEffect.style.width = `${fruitSize}px`;
+            bombEffect.style.height = `${fruitSize}px`;
+            bombEffect.style.left = `${x}px`;
+            bombEffect.style.top = `${y}px`;
+            bombEffect.style.fontSize = fruit.style.fontSize;
+            bombEffect.textContent = '💥';
+            bombEffect.style.zIndex = '20';
+            bombEffect.style.display = 'flex';
+            bombEffect.style.justifyContent = 'center';
+            bombEffect.style.alignItems = 'center';
+            
+            gameScreen.appendChild(bombEffect);
+            
+            // 应用爆炸动画
+            setTimeout(() => {
+                bombEffect.style.animation = 'bomb-explode 0.5s forwards';
+                
+                // 创建爆炸碎片效果
+                createExplosionEffect(x + fruitSize/2, y + fruitSize/2);
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    bombEffect.remove();
+                }, 500);
+            }, 10);
+        }
+        
+        // 创建增强版果汁飞溅效果
+        function createEnhancedJuiceEffect(x, y, color) {
+            // 创建多个果汁滴
+            for (let i = 0; i < 8; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'juice-drop';
+                drop.style.background = color;
+                drop.style.width = `${8 + Math.random() * 12}px`;
+                drop.style.height = `${8 + Math.random() * 12}px`;
+                drop.style.left = `${x}px`;
+                drop.style.top = `${y}px`;
+                
+                // 随机设置动画参数
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 30 + Math.random() * 50;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                drop.style.setProperty('--tx', `${tx}px`);
+                drop.style.setProperty('--ty', `${ty}px`);
+                drop.style.animation = `juice-fall 0.8s forwards`;
+                
+                gameScreen.appendChild(drop);
+                
+                // 动画结束后移除
+                setTimeout(() => {
+                    drop.remove();
+                }, 800);
+            }
+        }
+        
+        // 创建爆炸碎片效果
+        function createExplosionEffect(x, y) {
+            // 创建多个爆炸碎片
+            for (let i = 0; i < 12; i++) {
+                const fragment = document.createElement('div');
+                fragment.className = 'juice-drop';
+                fragment.style.background = i % 2 === 0 ? '#ff0000' : '#ff8800';
+                fragment.style.width = `${5 + Math.random() * 10}px`;
+                fragment.style.height = `${5 + Math.random() * 10}px`;
+                fragment.style.left = `${x}px`;
+                fragment.style.top = `${y}px`;
+                
+                // 随机设置动画参数
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 40 + Math.random() * 60;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                fragment.style.setProperty('--tx', `${tx}px`);
+                fragment.style.setProperty('--ty', `${ty}px`);
+                fragment.style.animation = `juice-fall 0.5s forwards`;
+                
+                gameScreen.appendChild(fragment);
+                
+                // 动画结束后移除
+                setTimeout(() => {
+                    fragment.remove();
+                }, 500);
+            }
+        }
+        
+        // 创建刀光效果
+        function createSwipeEffect(x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            const swipe = document.createElement('div');
+            swipe.className = 'swipe-effect';
+            swipe.style.width = `${length}px`;
+            swipe.style.left = `${x1}px`;
+            swipe.style.top = `${y1}px`;
+            swipe.style.transform = `rotate(${angle}deg)`;
+            swipe.style.opacity = '1';
+            
+            gameScreen.appendChild(swipe);
+            
+            // 添加淡出动画
+            swipe.style.animation = 'swipe-fade 0.3s forwards';
+            
+            // 动画结束后移除
+            setTimeout(() => {
+                swipe.remove();
+            }, 300);
+        }
+        
+        // 检测点是否在水果内
+        function isPointInFruit(x, y, fruit) {
+            const rect = fruit.getBoundingClientRect();
+            const gameScreenRect = gameScreen.getBoundingClientRect();
+            
+            // 转换为相对于游戏区域的坐标
+            const fruitX = rect.left - gameScreenRect.left;
+            const fruitY = rect.top - gameScreenRect.top;
+            const fruitSize = parseInt(fruit.style.width);
+            
+            // 计算点到水果中心的距离
+            const centerX = fruitX + fruitSize / 2;
+            const centerY = fruitY + fruitSize / 2;
+            const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+            
+            // 如果距离小于水果半径，则在水果内
+            return distance <= fruitSize / 2;
+        }
+        
+        // 检测线段与水果的交集 - 优化版本
+        function checkSwipeFruitIntersection(x1, y1, x2, y2) {
+            const fruits = document.querySelectorAll('.fruit:not([data-cut])');
+            
+            // 计算滑动路径的矩形范围
+            const minX = Math.min(x1, x2);
+            const maxX = Math.max(x1, x2);
+            const minY = Math.min(y1, y2);
+            const maxY = Math.max(y1, y2);
+            
+            // 扩大矩形范围，包含可能被切割的水果
+            const expandedMinX = minX - 50;
+            const expandedMaxX = maxX + 50;
+            const expandedMinY = minY - 50;
+            const expandedMaxY = maxY + 50;
+            
+            for (const fruit of fruits) {
+                // 如果这个水果已经在本次滑动中被切割过，跳过
+                if (swipeFruitsCut.has(fruit)) continue;
+                
+                const rect = fruit.getBoundingClientRect();
+                const gameScreenRect = gameScreen.getBoundingClientRect();
+                
+                // 转换为相对于游戏区域的坐标
+                const fruitX = rect.left - gameScreenRect.left;
+                const fruitY = rect.top - gameScreenRect.top;
+                const fruitSize = parseInt(fruit.style.width);
+                
+                // 水果的中心点
+                const centerX = fruitX + fruitSize / 2;
+                const centerY = fruitY + fruitSize / 2;
+                
+                // 首先进行粗略检测：水果中心是否在扩大后的矩形范围内
+                if (centerX < expandedMinX || centerX > expandedMaxX || 
+                    centerY < expandedMinY || centerY > expandedMaxY) {
+                    continue; // 水果不在滑动路径附近，跳过
+                }
+                
+                // 精确检测：计算线段与圆的交点
+                const radius = fruitSize / 2;
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const a = dx * dx + dy * dy;
+                const b = 2 * (dx * (x1 - centerX) + dy * (y1 - centerY));
+                const c = (x1 - centerX) * (x1 - centerX) + (y1 - centerY) * (y1 - centerY) - radius * radius;
+                
+                const discriminant = b * b - 4 * a * c;
+                
+                if (discriminant >= 0) {
+                    // 线段与圆有交点，处理水果切割
+                    swipeFruitsCut.add(fruit);
+                    handleFruitInteraction(fruit);
+                }
+            }
+        }
+        
+        // 处理滑动手势
+        function handleSwipeGesture(startX, startY, endX, endY) {
+            // 创建刀光效果
+            createSwipeEffect(startX, startY, endX, endY);
+            
+            // 检测滑动路径与水果的交集
+            checkSwipeFruitIntersection(startX, startY, endX, endY);
+        }
+        
+        // 更新UI
+        function updateUI() {
+            scoreElement.textContent = score;
+            timerElement.textContent = timeLeft;
+            livesElement.textContent = lives;
+        }
+        
+        // 检查游戏是否结束
+        function checkGameOver() {
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+        
+        // 结束游戏
+        function endGame() {
+            pauseGame();
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = 'block';
+            
+            // 游戏结束时缩小界面
+            shrinkGameInterface();
+        }
+        
+        // 添加CSS动画
+        const styleSheet = document.createElement('style');
+        styleSheet.innerHTML = `
+            @keyframes fall {
+                from { transform: translateY(0); }
+                to { transform: translateY(480px); }
+            }
+            
+            @keyframes expand {
+                from { transform: scale(0); opacity: 0.8; }
+                to { transform: scale(1.5); opacity: 0; }
+            }
+            
+            /* 为放大状态添加新的掉落动画 */
+            .mobile.game-enlarged .game-screen {
+                overflow: hidden;
+            }
+            
+            .mobile.game-enlarged @keyframes fall {
+                from { transform: translateY(0); }
+                to { transform: translateY(100%); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+        
+        // 事件监听器
+        startBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', pauseGame);
+        resetBtn.addEventListener('click', resetGame);
+        
+        // 模式选择
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modeButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentMode = button.dataset.mode;
+                
+                // 切换模式时生成新题目
+                if (isPlaying) {
+                    generateProblem();
+                }
+            });
+        });
+        
+        // 难度选择
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentDifficulty = button.dataset.difficulty;
+                
+                // 如果游戏正在进行中，重新设置水果生成间隔
+                if (isPlaying) {
+                    clearInterval(fruitInterval);
+                    const fruitIntervalTime = difficultySettings[currentDifficulty].fruitInterval;
+                    fruitInterval = setInterval(createFruit, fruitIntervalTime);
+                }
+            });
+        });
+
+        // 添加触摸事件支持
+        function addTouchSupport() {
+            const gameScreen = document.getElementById('gameScreen');
+            
+            // 监听触摸事件 - 只在游戏进行中阻止默认行为
+            gameScreen.addEventListener('touchstart', function(e) {
+                if (isPlaying) {
+                    isSwipeActive = true;
+                    swipePoints = [];
+                    swipeFruitsCut.clear();
+                    
+                    const touch = e.touches[0];
+                    const rect = gameScreen.getBoundingClientRect();
+                    swipeStartX = touch.clientX - rect.left;
+                    swipeStartY = touch.clientY - rect.top;
+                    
+                    swipePoints.push({ x: swipeStartX, y: swipeStartY });
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            gameScreen.addEventListener('touchmove', function(e) {
+                if (isPlaying && isSwipeActive) {
+                    const touch = e.touches[0];
+                    const rect = gameScreen.getBoundingClientRect();
+                    const currentX = touch.clientX - rect.left;
+                    const currentY = touch.clientY - rect.top;
+                    
+                    // 记录滑动点
+                    swipePoints.push({ x: currentX, y: currentY });
+                    
+                    // 每移动一定距离检测一次水果切割
+                    if (swipePoints.length >= 2) {
+                        const lastPoint = swipePoints[swipePoints.length - 2];
+                        const currentPoint = swipePoints[swipePoints.length - 1];
+                        
+                        // 检测滑动路径与水果的交集
+                        checkSwipeFruitIntersection(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y);
+                        
+                        // 创建刀光效果
+                        createSwipeEffect(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y);
+                    }
+                    
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            gameScreen.addEventListener('touchend', function(e) {
+                if (isPlaying && isSwipeActive) {
+                    isSwipeActive = false;
+                    
+                    if (swipePoints.length > 1) {
+                        const lastPoint = swipePoints[swipePoints.length - 1];
+                        handleSwipeGesture(swipeStartX, swipeStartY, lastPoint.x, lastPoint.y);
+                    }
+                    
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // 鼠标事件支持（用于桌面设备）
+            gameScreen.addEventListener('mousedown', function(e) {
+                if (isPlaying) {
+                    isSwipeActive = true;
+                    swipePoints = [];
+                    swipeFruitsCut.clear();
+                    
+                    const rect = gameScreen.getBoundingClientRect();
+                    swipeStartX = e.clientX - rect.left;
+                    swipeStartY = e.clientY - rect.top;
+                    
+                    swipePoints.push({ x: swipeStartX, y: swipeStartY });
+                    e.preventDefault();
+                }
+            });
+            
+            gameScreen.addEventListener('mousemove', function(e) {
+                if (isPlaying && isSwipeActive) {
+                    const rect = gameScreen.getBoundingClientRect();
+                    const currentX = e.clientX - rect.left;
+                    const currentY = e.clientY - rect.top;
+                    
+                    // 记录滑动点
+                    swipePoints.push({ x: currentX, y: currentY });
+                    
+                    // 每移动一定距离检测一次水果切割
+                    if (swipePoints.length >= 2) {
+                        const lastPoint = swipePoints[swipePoints.length - 2];
+                        const currentPoint = swipePoints[swipePoints.length - 1];
+                        
+                        // 检测滑动路径与水果的交集
+                        checkSwipeFruitIntersection(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y);
+                        
+                        // 创建刀光效果
+                        createSwipeEffect(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y);
+                    }
+                    
+                    e.preventDefault();
+                }
+            });
+            
+            gameScreen.addEventListener('mouseup', function(e) {
+                if (isPlaying && isSwipeActive) {
+                    isSwipeActive = false;
+                    
+                    if (swipePoints.length > 1) {
+                        const lastPoint = swipePoints[swipePoints.length - 1];
+                        handleSwipeGesture(swipeStartX, swipeStartY, lastPoint.x, lastPoint.y);
+                    }
+                    
+                    e.preventDefault();
+                }
+            });
+            
+            gameScreen.addEventListener('mouseleave', function(e) {
+                if (isPlaying && isSwipeActive) {
+                    isSwipeActive = false;
+                    
+                    if (swipePoints.length > 1) {
+                        const lastPoint = swipePoints[swipePoints.length - 1];
+                        handleSwipeGesture(swipeStartX, swipeStartY, lastPoint.x, lastPoint.y);
+                    }
+                }
+            });
+            
+            // 为所有按钮添加触摸反馈
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                btn.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
+            });
+        }
+        
+        // 修改原有的createFruit函数，添加触摸支持
+        const originalCreateFruit = createFruit;
+        createFruit = function() {
+            originalCreateFruit.apply(this, arguments);
+            
+            // 为新创建的水果添加触摸事件
+            const fruits = document.querySelectorAll('.fruit:last-child');
+            const newFruit = fruits[fruits.length - 1];
+            
+            if (newFruit) {
+                
+                // 移除原有的触摸事件监听器，避免重复绑定
+                newFruit.removeEventListener('touchstart', handleFruitTouchStart);
+                newFruit.removeEventListener('touchend', handleFruitTouchEnd);
+                
+                // 添加新的触摸事件监听器
+                newFruit.addEventListener('touchstart', handleFruitTouchStart);
+                newFruit.addEventListener('touchend', handleFruitTouchEnd);
+            }
+        };
+        
+        // 定义触摸事件处理函数
+        function handleFruitTouchStart(e) {
+            if (isPlaying) {
+                // 阻止默认行为以避免滚动和缩放
+                e.stopPropagation();
+                this.style.transform = 'scale(1.1)';
+            }
+        }
+        
+        function handleFruitTouchEnd(e) {
+            if (isPlaying) {
+                e.stopPropagation();
+                this.style.transform = '';
+                // 直接调用处理函数，而不是模拟点击
+                handleFruitInteraction(this);
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', function() {
+            // 添加触摸支持
+            addTouchSupport();
+            
+            // 防止移动端缩放
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+            
+            // 防止双击缩放
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            // 为再玩一次按钮添加事件监听
+            restartBtn.addEventListener('click', function() {
+                // 隐藏游戏结束界面
+                gameOverScreen.style.display = 'none';
+                initGame();
+                startGame();
+            });
+            
+            restartBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                gameOverScreen.style.display = 'none';
+                initGame();
+                startGame();
+            });
+            
+            // 初始时如果是移动设备，使用更大的游戏区域
+            if (isMobile) {
+                gameScreen.style.height = '50vh';
+                gameScreen.style.minHeight = '300px';
+            }
+            
+            // 确保页面在游戏开始前可以滚动
+            document.body.style.overflow = 'auto';
+            
+            // 初始时允许gameScreen滚动
+            gameScreen.classList.add('scrollable');
+        });
+        
+        // 初始化游戏
+        initGame();
+    </script>
+</body>
+</html>
