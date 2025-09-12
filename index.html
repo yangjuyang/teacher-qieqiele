@@ -1166,11 +1166,16 @@
         
         // 放大游戏界面
         function enlargeGameInterface() {
-            // 只在移动设备上放大，且不是平板设备
-            if (isMobile && !isTablet) {
+            // 修改：移除平板检测限制，对所有移动设备应用放大
+            if (isMobile) {
                 body.classList.add('game-enlarged');
                 container.classList.add('game-enlarged');
                 isGameEnlarged = true;
+                
+                // 安卓设备特定优化：强制重绘以解决渲染问题
+                if (isAndroid) {
+                    void container.offsetHeight; // 触发重绘
+                }
             }
         }
         
