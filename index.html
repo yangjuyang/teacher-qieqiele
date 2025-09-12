@@ -58,11 +58,23 @@
             font-size: 1.2rem;
             font-weight: bold;
             transition: all 0.3s ease;
+            /* 添加兼容性更好的flex布局 */
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        
+        /* 新增：确保游戏信息项在钉钉中正确显示 */
+        .game-info > div {
+            flex: 1;
+            min-width: 90px; /* 防止被挤压 */
+            text-align: center;
+            margin: 0 5px;
         }
         
         .score, .timer, .lives {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
         
@@ -931,6 +943,40 @@
         .android .game-over-btn {
             -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         }
+        
+        /* 新增：钉钉环境特定优化 */
+        .dingtalk .game-info {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+        
+        .dingtalk .game-info > div {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .dingtalk.android .game-info {
+            /* 安卓钉钉特殊处理 */
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 380px) {
+            .dingtalk.android .game-info {
+                font-size: 1rem;
+            }
+        }
+        
+        /* 确保生命值在钉钉中显示 */
+        .dingtalk .lives {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
     </style>
 </head>
 <body>
@@ -1035,6 +1081,9 @@
                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
                         (window.innerWidth >= 768 && window.innerHeight >= 1024);
         
+        // 新增：检测是否为钉钉环境
+        const isDingTalk = /DingTalk/i.test(navigator.userAgent);
+        
         // 难度配置
         const difficultySettings = {
             easy: { fruitInterval: 1200, animationDuration: { min: 4, max: 6 } },
@@ -1088,6 +1137,12 @@
         // 如果是iOS设备，添加ios类
         if (isIOS) {
             body.classList.add('ios');
+        }
+        
+        // 如果是钉钉环境，添加dingtalk类
+        if (isDingTalk) {
+            body.classList.add('dingtalk');
+            console.log("检测到钉钉环境，应用特定优化");
         }
         
         // 初始检查方向
@@ -1698,7 +1753,7 @@
             
             // 扩大矩形范围，包含可能被切割的水果
             const expandedMinX = minX - 50;
-            expandedMaxX = maxX + 50;
+            const expandedMaxX = maxX + 50;
             const expandedMinY = minY - 50;
             const expandedMaxY = maxY + 50;
             
@@ -2050,6 +2105,18 @@
             
             // 初始时允许gameScreen滚动
             gameScreen.classList.add('scrollable');
+            
+            // 钉钉环境特殊处理
+            if (isDingTalk) {
+                console.log("钉钉环境检测，应用特定优化");
+                // 确保生命值显示
+                const livesElement = document.querySelector('.lives');
+                if (livesElement) {
+                    livesElement.style.display = 'flex';
+                    livesElement.style.visibility = 'visible';
+                    livesElement.style.opacity = '1';
+                }
+            }
         });
         
         // 初始化游戏
