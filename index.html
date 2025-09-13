@@ -350,8 +350,11 @@
             margin-bottom: 15px;
         }
         
+        /* 关键修改：确保安卓设备在放大状态下也隐藏选择器和说明 */
         .mobile.game-enlarged .selector-container,
-        .mobile.game-enlarged .instructions {
+        .mobile.game-enlarged .instructions,
+        .android.mobile.game-enlarged .selector-container,
+        .android.mobile.game-enlarged .instructions {
             display: none;
         }
         
@@ -649,7 +652,6 @@
             
             .fruit {
                 min-width: 70px;
-                min-height: 70px;
             }
         }
         
@@ -1663,7 +1665,7 @@
             
             // 扩大矩形范围，包含可能被切割的水果
             const expandedMinX = minX - 50;
-            const expandedMaxX = maxX + 50;
+            expandedMaxX = maxX + 50;
             const expandedMinY = minY - 50;
             const expandedMaxY = maxY + 50;
             
@@ -1736,8 +1738,6 @@
             finalScoreElement.textContent = score;
             gameOverScreen.style.display = 'block';
             
-            // 游戏结束时缩小界面
-            shrinkGameInterface();
         }
         
         // 添加CSS动画
