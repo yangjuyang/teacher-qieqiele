@@ -912,6 +912,26 @@
                 max-height: 500px;
             }
         }
+
+        /* 新增：钉钉浏览器特定样式 */
+        .dingtalk.android .mobile.game-enlarged .selector-container,
+        .dingtalk.android .mobile.game-enlarged .instructions {
+            display: none !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            pointer-events: none !important;
+        }
+        
+        /* 强制隐藏元素的通用规则 */
+        .mobile.game-enlarged .selector-container,
+        .mobile.game-enlarged .instructions,
+        .android.mobile.game-enlarged .selector-container,
+        .android.mobile.game-enlarged .instructions {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -1040,6 +1060,15 @@
         const container = document.querySelector('.container');
         const body = document.body;
         
+        // 在现有代码中添加钉钉浏览器检测
+        const isDingTalk = /DingTalk/i.test(navigator.userAgent);
+        
+        // 如果是钉钉浏览器，给body添加dingtalk类
+        if (isDingTalk) {
+            document.body.classList.add('dingtalk');
+            console.log("检测到钉钉浏览器，应用特定优化");
+        }
+
         // 如果是移动设备，给body和container添加mobile类
         if (isMobile) {
             body.classList.add('mobile');
@@ -1061,7 +1090,7 @@
         if (isIOS) {
             body.classList.add('ios');
         }
-        
+
         // 水果样式配置
         const fruitStyles = [
             { background: 'linear-gradient(to bottom, #ff5e5e, #ff2121)', color: 'white', type: 'apple', width: 70 },
