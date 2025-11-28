@@ -15,9 +15,10 @@
         
         body {
             background-color: #fff9f0;
-            padding: 20px;
+            padding: 15px;
             color: #333;
             background-image: linear-gradient(120deg, #fff9f0 0%, #ffe8e8 100%);
+            overflow-x: hidden;
         }
         
         .container {
@@ -28,11 +29,11 @@
         h1 {
             text-align: center;
             color: #ff6b6b;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
             text-shadow: 2px 2px 0px #ffd166;
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             box-shadow: 0 8px 15px rgba(255,107,107,0.2);
             border: 3px dashed #ffd166;
@@ -41,13 +42,13 @@
         .game-area {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
         
         .dishes-row {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
         }
         
@@ -56,7 +57,7 @@
             min-width: 300px;
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 8px 15px rgba(0,0,0,0.1);
             border: 2px solid;
         }
@@ -75,11 +76,11 @@
         
         .dishes-section h2 {
             text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
             border-bottom: 3px dotted;
             color: #2c3e50;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
         }
         
@@ -101,25 +102,25 @@
         .dishes-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
             justify-content: center;
-            min-height: 200px;
+            min-height: 150px;
         }
         
         .dish-item {
-            width: 130px;
-            height: 80px;
+            width: 120px;
+            height: 70px;
             border: 2px dashed;
-            border-radius: 20px;
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 8px;
             cursor: grab;
             transition: all 0.3s;
             text-align: center;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             position: relative;
             overflow: hidden;
             user-select: none;
@@ -178,7 +179,7 @@
         .menu-table {
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 8px 15px rgba(0,0,0,0.1);
             overflow-x: auto;
             border: 3px solid #ffd166;
@@ -191,7 +192,7 @@
         
         th, td {
             border: 2px solid #ffd166;
-            padding: 15px;
+            padding: 10px;
             text-align: center;
             vertical-align: middle;
         }
@@ -200,12 +201,12 @@
             background-color: #ff6b6b;
             color: white;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
         }
         
         td {
-            height: 120px;
+            height: 100px;
             background-color: #fff9f0;
             transition: background-color 0.3s;
             cursor: pointer;
@@ -221,15 +222,16 @@
         }
         
         .cell-content {
-            min-height: 100px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            border-radius: 15px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 8px;
             transition: all 0.3s;
             touch-action: manipulation;
+            font-size: 14px;
         }
         
         .cell-meat {
@@ -258,16 +260,16 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 15px;
         }
         
         button {
-            padding: 15px 30px;
+            padding: 12px 25px;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             transition: all 0.3s;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -313,12 +315,12 @@
         
         .message {
             text-align: center;
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 15px;
+            padding: 12px;
             border-radius: 15px;
             font-weight: bold;
             display: none;
-            font-size: 18px;
+            font-size: 16px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
@@ -487,8 +489,8 @@
             }
             
             h1 {
-                font-size: 1.8rem;
-                padding: 15px;
+                font-size: 1.6rem;
+                padding: 12px;
             }
             
             .controls {
@@ -508,16 +510,16 @@
             }
             
             th, td {
-                padding: 10px;
+                padding: 8px;
             }
             
             td {
-                height: 100px;
+                height: 90px;
             }
             
             /* 移动端单元格样式调整 */
             .cell-content {
-                min-height: 80px;
+                min-height: 70px;
                 font-size: 14px;
             }
         }
@@ -528,12 +530,12 @@
             }
             
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
                 padding: 10px;
             }
             
             .dishes-section {
-                padding: 15px;
+                padding: 12px;
             }
             
             .dish-item {
@@ -555,9 +557,10 @@
         
         /* iPad特定样式 - 确保显示菜品区域并使用拖拽模式 */
         @media (min-width: 769px) and (max-width: 1024px) {
-            /* 整体布局调整 */
+            /* 整体布局调整 - 更紧凑的布局 */
             body {
-                padding: 15px;
+                padding: 10px;
+                overflow-x: hidden;
             }
             
             .container {
@@ -565,68 +568,73 @@
             }
             
             h1 {
-                font-size: 2rem;
-                margin-bottom: 20px;
-                padding: 15px;
+                font-size: 1.6rem;
+                margin-bottom: 15px;
+                padding: 12px;
+            }
+            
+            .game-area {
+                gap: 12px;
+                margin-bottom: 15px;
             }
             
             .dishes-row {
                 display: flex; /* 确保在iPad上显示菜品区域 */
-                gap: 15px;
-                margin-bottom: 15px;
+                gap: 12px;
+                margin-bottom: 12px;
             }
             
             .dishes-section {
-                min-width: calc(33.333% - 10px);
-                padding: 15px;
+                min-width: calc(33.333% - 8px);
+                padding: 12px;
             }
             
             .dishes-section h2 {
-                font-size: 1.4rem;
-                margin-bottom: 15px;
+                font-size: 1.2rem;
+                margin-bottom: 12px;
             }
             
             .dishes-container {
-                gap: 10px;
-                min-height: 150px;
+                gap: 8px;
+                min-height: 130px;
             }
             
             .dish-item {
-                width: 110px;
-                height: 70px;
-                font-size: 14px;
-                border-radius: 15px;
+                width: 100px;
+                height: 65px;
+                font-size: 12px;
+                border-radius: 12px;
             }
             
             .menu-table {
-                padding: 15px;
+                padding: 12px;
             }
             
             th, td {
-                padding: 10px;
-            }
-            
-            th {
-                font-size: 1rem;
-            }
-            
-            td {
-                height: 100px;
-            }
-            
-            .cell-content {
-                min-height: 80px;
-                font-size: 14px;
                 padding: 8px;
             }
             
+            th {
+                font-size: 0.9rem;
+            }
+            
+            td {
+                height: 85px;
+            }
+            
+            .cell-content {
+                min-height: 70px;
+                font-size: 12px;
+                padding: 6px;
+            }
+            
             .controls {
-                margin-top: 15px;
+                margin-top: 12px;
             }
             
             button {
-                padding: 12px 25px;
-                font-size: 16px;
+                padding: 10px 20px;
+                font-size: 14px;
             }
             
             /* 在iPad上隐藏模态框 */
@@ -647,6 +655,52 @@
         @media (min-width: 1025px) {
             .modal {
                 display: none !important;
+            }
+        }
+        
+        /* 针对平板竖屏模式的特殊调整 */
+        @media (max-height: 1024px) and (min-width: 769px) {
+            body {
+                padding: 8px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+                padding: 10px;
+            }
+            
+            .dishes-row {
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .dishes-section {
+                padding: 10px;
+            }
+            
+            .dishes-container {
+                min-height: 120px;
+            }
+            
+            .dish-item {
+                width: 95px;
+                height: 60px;
+                font-size: 11px;
+            }
+            
+            .menu-table {
+                padding: 10px;
+            }
+            
+            td {
+                height: 80px;
+            }
+            
+            .cell-content {
+                min-height: 65px;
+                font-size: 11px;
+                padding: 5px;
             }
         }
     </style>
