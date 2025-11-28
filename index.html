@@ -341,7 +341,7 @@
             font-style: italic;
         }
         
-        /* 选择模态框样式 - 在iPad和Web端隐藏 */
+        /* 选择模态框样式 - 在平板和Web端隐藏 */
         .modal {
             display: none;
             position: fixed;
@@ -470,7 +470,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
         
-        /* 新增样式：iPad拖拽优化 */
+        /* 新增样式：平板拖拽优化 */
         .no-scroll {
             overflow: hidden;
             position: fixed;
@@ -555,7 +555,7 @@
             }
         }
         
-        /* iPad特定样式 - 确保显示菜品区域并使用拖拽模式 */
+        /* 平板特定样式 - 确保显示菜品区域并使用拖拽模式 */
         @media (min-width: 769px) and (max-width: 1024px) {
             /* 整体布局调整 - 更紧凑的布局 */
             body {
@@ -579,7 +579,7 @@
             }
             
             .dishes-row {
-                display: flex; /* 确保在iPad上显示菜品区域 */
+                display: flex; /* 确保在平板上显示菜品区域 */
                 gap: 12px;
                 margin-bottom: 12px;
             }
@@ -637,7 +637,7 @@
                 font-size: 14px;
             }
             
-            /* 在iPad上隐藏模态框 */
+            /* 在平板上隐藏模态框 */
             .modal {
                 display: none !important;
             }
@@ -686,7 +686,7 @@
             .dish-item {
                 width: 95px;
                 height: 60px;
-                font-size: 11px;
+                font-size: 15px;
             }
             
             .menu-table {
@@ -699,9 +699,46 @@
             
             .cell-content {
                 min-height: 65px;
-                font-size: 11px;
+                font-size: 15px;
                 padding: 5px;
             }
+        }
+        
+        /* 新增：学而思平板触摸优化 */
+        .touch-drag-element {
+            position: fixed;
+            z-index: 10000;
+            pointer-events: none;
+            transform: rotate(5deg) scale(1.1);
+            opacity: 0.9;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: none;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            padding: 8px;
+            user-select: none;
+        }
+        
+        .touch-drag-meat {
+            background-color: #ffebee;
+            border: 2px dashed #ff9aa2;
+            color: #d32f2f;
+        }
+        
+        .touch-drag-vegetable {
+            background-color: #f1f8e9;
+            border: 2px dashed #b5e48c;
+            color: #388e3c;
+        }
+        
+        .touch-drag-soup {
+            background-color: #e3f2fd;
+            border: 2px dashed #a2d2ff;
+            color: #1565c0;
         }
     </style>
 </head>
@@ -828,16 +865,15 @@
         let currentCell = null;
         let selectedDish = null;
 
-        // 拖拽相关变量
-        let dragElement = null;
-        let dragClone = null;
-        let dragOffset = { x: 0, y: 0 };
-        let isDragging = false;
-        let lastTouch = null;
-        let startScrollY = 0;
+        // 触摸拖拽相关变量
+        let touchDragElement = null;
+        let originalElement = null;
+        let isTouchDragging = false;
         let touchStartX = 0;
         let touchStartY = 0;
         let touchStartTime = 0;
+        let lastTouchX = 0;
+        let lastTouchY = 0;
 
         // 初始化菜品
         function initializeDishes() {
@@ -877,13 +913,13 @@
             dishElement.addEventListener('dragstart', handleDragStart);
             dishElement.addEventListener('dragend', handleDragEnd);
             
-            // 添加触摸事件支持 - 用于iPad上的拖拽
+            // 添加触摸事件支持 - 用于平板上的拖拽
             dishElement.addEventListener('touchstart', handleTouchStart, {passive: false});
             dishElement.addEventListener('touchmove', handleTouchMove, {passive: false});
             dishElement.addEventListener('touchend', handleTouchEnd);
             
             // 只在手机端添加点击事件
-            if (isMobileDevice() && !isIPadDevice()) {
+            if (isMobileDevice() && !isTabletDevice()) {
                 dishElement.addEventListener('click', handleDishClick);
             }
             
@@ -904,7 +940,7 @@
             cellContent.addEventListener('dragstart', handleCellDragStart);
             cellContent.addEventListener('dragend', handleCellDragEnd);
             
-            // 添加触摸事件支持 - 用于iPad上的拖拽
+            // 添加触摸事件支持 - 用于平板上的拖拽
             cellContent.addEventListener('touchstart', handleTouchStart, {passive: false});
             cellContent.addEventListener('touchmove', handleTouchMove, {passive: false});
             cellContent.addEventListener('touchend', handleTouchEnd);
@@ -912,34 +948,32 @@
             return cellContent;
         }
 
-        // 触摸开始事件 - 优化iPad拖拽
+        // 触摸开始事件 - 优化平板拖拽
         function handleTouchStart(e) {
-            // 只有在iPad上才处理触摸拖拽
-            if (!isIPadDevice()) return;
+            // 只有在平板上才处理触摸拖拽
+            if (!isTabletDevice()) return;
             
             e.preventDefault();
             const touch = e.touches[0];
             touchStartX = touch.clientX;
             touchStartY = touch.clientY;
             touchStartTime = Date.now();
-            dragElement = this;
+            originalElement = this;
             
             // 记录触摸位置相对于元素左上角的偏移
             const rect = this.getBoundingClientRect();
-            dragOffset.x = touch.clientX - rect.left;
-            dragOffset.y = touch.clientY - rect.top;
-            
-            // 记录初始滚动位置
-            startScrollY = window.scrollY;
+            const offsetX = touch.clientX - rect.left;
+            const offsetY = touch.clientY - rect.top;
             
             // 创建拖拽元素的克隆
-            dragClone = this.cloneNode(true);
-            dragClone.classList.add('dragging-element');
-            dragClone.style.width = `${rect.width}px`;
-            dragClone.style.height = `${rect.height}px`;
-            dragClone.style.left = `${touch.clientX - dragOffset.x}px`;
-            dragClone.style.top = `${touch.clientY - dragOffset.y + startScrollY}px`;
-            document.body.appendChild(dragClone);
+            touchDragElement = document.createElement('div');
+            touchDragElement.className = `touch-drag-element touch-drag-${this.dataset.type}`;
+            touchDragElement.textContent = this.textContent;
+            touchDragElement.style.width = `${rect.width}px`;
+            touchDragElement.style.height = `${rect.height}px`;
+            touchDragElement.style.left = `${touch.clientX - offsetX}px`;
+            touchDragElement.style.top = `${touch.clientY - offsetY}px`;
+            document.body.appendChild(touchDragElement);
             
             // 添加拖拽样式
             this.classList.add('dragging');
@@ -952,35 +986,40 @@
             };
             
             this._dragData = data;
-            isDragging = false; // 初始状态为未拖拽
+            isTouchDragging = false; // 初始状态为未拖拽
             
             // 阻止页面滚动
             document.body.classList.add('no-scroll');
             document.body.classList.add('dragging-active');
         }
 
-        // 触摸移动事件 - 优化iPad拖拽
+        // 触摸移动事件 - 优化平板拖拽
         function handleTouchMove(e) {
-            // 只有在iPad上才处理触摸拖拽
-            if (!isIPadDevice() || !dragElement || !dragClone) return;
+            // 只有在平板上才处理触摸拖拽
+            if (!isTabletDevice() || !touchDragElement) return;
             
             e.preventDefault();
             const touch = e.touches[0];
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
             const deltaX = Math.abs(touch.clientX - touchStartX);
             const deltaY = Math.abs(touch.clientY - touchStartY);
             
             // 如果移动距离足够大，则认为是拖拽操作
-            if (!isDragging && (deltaX > 10 || deltaY > 10)) {
-                isDragging = true;
+            if (!isTouchDragging && (deltaX > 10 || deltaY > 10)) {
+                isTouchDragging = true;
                 
                 // 隐藏原始元素
-                dragElement.style.opacity = '0.3';
+                if (originalElement) {
+                    originalElement.style.opacity = '0.3';
+                }
             }
             
-            if (isDragging) {
+            if (isTouchDragging) {
                 // 更新克隆元素位置
-                dragClone.style.left = `${touch.clientX - dragOffset.x}px`;
-                dragClone.style.top = `${touch.clientY - dragOffset.y + window.scrollY}px`;
+                const rect = touchDragElement.getBoundingClientRect();
+                touchDragElement.style.left = `${touch.clientX - rect.width/2}px`;
+                touchDragElement.style.top = `${touch.clientY - rect.height/2}px`;
                 
                 // 检查是否经过可放置区域
                 const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -996,14 +1035,12 @@
                     dropZone.classList.add('highlight');
                 }
             }
-            
-            lastTouch = touch;
         }
 
-        // 触摸结束事件 - 优化iPad拖拽
+        // 触摸结束事件 - 优化平板拖拽
         function handleTouchEnd(e) {
-            // 只有在iPad上才处理触摸拖拽
-            if (!isIPadDevice() || !dragElement) return;
+            // 只有在平板上才处理触摸拖拽
+            if (!isTabletDevice() || !originalElement) return;
             
             e.preventDefault();
             
@@ -1016,29 +1053,29 @@
                 zone.classList.remove('highlight');
             });
             
-            if (isDragging) {
+            if (isTouchDragging) {
                 // 恢复原始元素
-                dragElement.style.opacity = '';
-                dragElement.classList.remove('dragging');
+                if (originalElement) {
+                    originalElement.style.opacity = '';
+                    originalElement.classList.remove('dragging');
+                }
                 
                 // 移除克隆元素
-                if (dragClone) {
-                    document.body.removeChild(dragClone);
-                    dragClone = null;
+                if (touchDragElement) {
+                    document.body.removeChild(touchDragElement);
+                    touchDragElement = null;
                 }
                 
                 // 查找放置区域
-                if (lastTouch) {
-                    const dropTarget = document.elementFromPoint(lastTouch.clientX, lastTouch.clientY);
-                    const dropZone = findDropZone(dropTarget);
-                    
-                    if (dropZone && dragElement._dragData) {
-                        // 执行放置操作
-                        simulateDrop(dragElement._dragData, dropZone);
-                    }
+                const dropTarget = document.elementFromPoint(lastTouchX, lastTouchY);
+                const dropZone = findDropZone(dropTarget);
+                
+                if (dropZone && originalElement._dragData) {
+                    // 执行放置操作
+                    simulateDrop(originalElement._dragData, dropZone);
                 }
                 
-                isDragging = false;
+                isTouchDragging = false;
             } else {
                 // 如果是点击而非拖拽
                 const touch = e.changedTouches[0];
@@ -1049,17 +1086,16 @@
                 // 如果是短时间小距离的触摸，视为点击
                 if (timeDiff < 300 && deltaX < 5 && deltaY < 5) {
                     // 移除克隆元素
-                    if (dragClone) {
-                        document.body.removeChild(dragClone);
-                        dragClone = null;
+                    if (touchDragElement) {
+                        document.body.removeChild(touchDragElement);
+                        touchDragElement = null;
                     }
                     
-                    dragElement.classList.remove('dragging');
+                    originalElement.classList.remove('dragging');
                 }
             }
             
-            dragElement = null;
-            lastTouch = null;
+            originalElement = null;
         }
 
         // 查找放置区域
@@ -1121,8 +1157,8 @@
 
         // 拖拽开始（从菜品区域）
         function handleDragStart(e) {
-            // 在手机端（非iPad）阻止拖拽
-            if (isMobileDevice() && !isIPadDevice()) {
+            // 在手机端（非平板）阻止拖拽
+            if (isMobileDevice() && !isTabletDevice()) {
                 e.preventDefault();
                 return;
             }
@@ -1142,8 +1178,8 @@
 
         // 拖拽开始（从单元格）
         function handleCellDragStart(e) {
-            // 在手机端（非iPad）阻止拖拽
-            if (isMobileDevice() && !isIPadDevice()) {
+            // 在手机端（非平板）阻止拖拽
+            if (isMobileDevice() && !isTabletDevice()) {
                 e.preventDefault();
                 return;
             }
@@ -1164,7 +1200,7 @@
         // 菜品点击事件（手机端）
         function handleDishClick() {
             // 只在手机端处理点击事件
-            if (!isMobileDevice() || isIPadDevice()) {
+            if (!isMobileDevice() || isTabletDevice()) {
                 return;
             }
             
@@ -1181,12 +1217,12 @@
                 zone.addEventListener('dragleave', handleDragLeave);
                 zone.addEventListener('drop', handleDrop);
                 
-                // 添加触摸事件支持 - 用于iPad上的拖拽
+                // 添加触摸事件支持 - 用于平板上的拖拽
                 zone.addEventListener('touchmove', handleTouchMoveOver, {passive: false});
                 zone.addEventListener('touchend', handleTouchDrop);
                 
                 // 只在手机端添加点击事件
-                if (isMobileDevice() && !isIPadDevice()) {
+                if (isMobileDevice() && !isTabletDevice()) {
                     zone.addEventListener('click', handleCellClick);
                 }
             });
@@ -1194,8 +1230,8 @@
 
         // 触摸拖拽经过事件
         function handleTouchMoveOver(e) {
-            // 只有在iPad上才处理触摸拖拽
-            if (!isIPadDevice() || !isDragging) return;
+            // 只有在平板上才处理触摸拖拽
+            if (!isTabletDevice() || !isTouchDragging) return;
             
             e.preventDefault();
             this.classList.add('highlight');
@@ -1203,8 +1239,8 @@
 
         // 触摸放置事件
         function handleTouchDrop(e) {
-            // 只有在iPad上才处理触摸拖拽
-            if (!isIPadDevice()) return;
+            // 只有在平板上才处理触摸拖拽
+            if (!isTabletDevice()) return;
             
             e.preventDefault();
             this.classList.remove('highlight');
@@ -1212,8 +1248,8 @@
 
         // 处理拖拽经过
         function handleDragOver(e) {
-            // 在手机端（非iPad）阻止拖拽
-            if (isMobileDevice() && !isIPadDevice()) {
+            // 在手机端（非平板）阻止拖拽
+            if (isMobileDevice() && !isTabletDevice()) {
                 e.preventDefault();
                 return;
             }
@@ -1223,8 +1259,8 @@
 
         // 处理拖拽进入
         function handleDragEnter(e) {
-            // 在手机端（非iPad）阻止拖拽
-            if (isMobileDevice() && !isIPadDevice()) {
+            // 在手机端（非平板）阻止拖拽
+            if (isMobileDevice() && !isTabletDevice()) {
                 e.preventDefault();
                 return;
             }
@@ -1235,8 +1271,8 @@
 
         // 处理拖拽离开
         function handleDragLeave() {
-            // 在手机端（非iPad）阻止拖拽
-            if (isMobileDevice() && !isIPadDevice()) {
+            // 在手机端（非平板）阻止拖拽
+            if (isMobileDevice() && !isTabletDevice()) {
                 return;
             }
             
@@ -1245,8 +1281,8 @@
 
         // 处理放置
         function handleDrop(e) {
-            // 在手机端（非iPad）阻止拖拽
-            if (isMobileDevice() && !isIPadDevice()) {
+            // 在手机端（非平板）阻止拖拽
+            if (isMobileDevice() && !isTabletDevice()) {
                 e.preventDefault();
                 return;
             }
@@ -1302,7 +1338,7 @@
         // 单元格点击事件（手机端）
         function handleCellClick() {
             // 只在手机端处理点击事件
-            if (!isMobileDevice() || isIPadDevice()) {
+            if (!isMobileDevice() || isTabletDevice()) {
                 return;
             }
             
@@ -1319,7 +1355,7 @@
         // 显示菜品选择模态框
         function showDishSelectionModal(type, day) {
             // 只在手机端显示模态框
-            if (!isMobileDevice() || isIPadDevice()) {
+            if (!isMobileDevice() || isTabletDevice()) {
                 return;
             }
             
@@ -1497,9 +1533,19 @@
             return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
         }
 
-        // 检测是否为iPad设备
-        function isIPadDevice() {
-            return /iPad|Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document;
+        // 检测是否为平板设备
+        function isTabletDevice() {
+            // 更广泛的平板设备检测
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isTablet = /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP))))/.test(userAgent);
+            const hasTouch = 'ontouchend' in document;
+            
+            // 检测屏幕尺寸
+            const screenWidth = window.screen.width;
+            const screenHeight = window.screen.height;
+            const isLargeScreen = Math.min(screenWidth, screenHeight) >= 768;
+            
+            return (isTablet || isLargeScreen) && hasTouch;
         }
 
         // 初始化
@@ -1522,6 +1568,13 @@
                     hideDishSelectionModal();
                 }
             });
+            
+            // 添加触摸事件监听器到body，防止意外滚动
+            document.body.addEventListener('touchmove', function(e) {
+                if (isTouchDragging) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
         });
     </script>
 </body>
